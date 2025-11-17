@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "student_grades",
+  "info": {
+    "singularName": "student-grade",
+    "pluralName": "student-grades",
+    "displayName": "student-grade"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
+      "type": "decimal",
+      "required": true
+    },
+    "related_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "student_grades"
+    }
+  }
+}

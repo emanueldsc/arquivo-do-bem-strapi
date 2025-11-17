@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "semesters",
+  "info": {
+    "singularName": "semester",
+    "pluralName": "semesters",
+    "displayName": "semester"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "regex": "\\d{4}[.\\-\\,]\\d"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "grade_formula": {
+      "type": "text"
+    },
+    "grade_formula_language": {
+      "type": "enumeration",
+      "enum": [
+        "JAVASCRIPT"
+      ]
+    },
+    "grade_formula_description": {
+      "type": "string"
+    },
+    "project": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::project.project",
+      "inversedBy": "semesters"
+    }
+  }
+}
