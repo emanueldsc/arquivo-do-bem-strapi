@@ -40,6 +40,7 @@ export default {
                 password,
                 role: professorRole.id,
                 confirmed: true,
+                provider: "local",
             });
 
         // 4) Gerar JWT (opcional)
@@ -61,7 +62,6 @@ export default {
     ,
 
     async registerStudent(ctx: Context) {
-        debugger;
         const { username, email, password } = ctx.request.body as {
             username: string;
             email: string;
@@ -104,6 +104,7 @@ export default {
                 password,
                 role: studentRole.id,
                 confirmed: true, // opcional: já confirma email
+                provider: "local",
             });
 
         // 4) Gerar JWT

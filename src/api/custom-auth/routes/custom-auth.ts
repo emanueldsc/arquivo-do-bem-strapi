@@ -3,16 +3,16 @@ export default {
     routes: [
         {
             method: 'POST',
-            path: '/auth/register-professor',
-            handler: 'auth.registerProfessor',
+            path: '/custom-auth/register-professor',
+            handler: 'custom-auth.registerProfessor',
             config: {
                 auth: false, // permitir sem login
             },
         },
         {
             method: "POST",
-            path: "/auth/register-student",
-            handler: "auth.registerStudent",
+            path: "/custom-auth/register-student",
+            handler: "custom-auth.registerStudent",
             config: {
                 auth: false, // permite sem login
             },
