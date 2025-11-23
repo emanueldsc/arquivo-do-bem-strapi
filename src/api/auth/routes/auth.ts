@@ -8,6 +8,14 @@ export default {
             config: {
                 auth: false, // permitir sem login
             },
-        }
+        },
+        {
+            method: "POST",
+            path: "/auth/register-student",
+            handler: "auth.registerStudent",
+            config: {
+                auth: false, // permite sem login
+            },
+        },
     ]
 }

@@ -2,6 +2,66 @@ import { Context } from 'koa';
 
 export default {
     async registerProfessor(ctx: Context) {
+        const { username, email, password } = ctx.request.body;
+
+        if (!username || !email || !password) {
+            return ctx.badRequest("username, email e password são obrigatórios");
+        }
+
+        // 1) Buscar o role "Professor"
+        const professorRole = await strapi.db
+            .query("plugin::users-permissions.role")
+            .findOne({
+                where: { name: "Professor" },
+            });
+
+        if (!professorRole) {
+            return ctx.badRequest('Role "Professor" não encontrada');
+        }
+
+        // 2) Verificar se email já existe
+        const existingUser = await strapi.db
+            .query("plugin::users-permissions.user")
+            .findOne({
+                where: { email: email.toLowerCase() },
+            });
+
+        if (existingUser) {
+            return ctx.badRequest("Já existe um usuário com esse email");
+        }
+
+        // 3) Criar o usuário com o service CORRETO (hasheia senha!)
+        const user = await strapi
+            .plugin("users-permissions")
+            .service("user")
+            .add({
+                username,
+                email: email.toLowerCase(),
+                password,
+                role: professorRole.id,
+                confirmed: true,
+            });
+
+        // 4) Gerar JWT (opcional)
+        const jwt = strapi
+            .plugin("users-permissions")
+            .service("jwt")
+            .issue({ id: user.id });
+
+        // 5) Resposta idêntica ao Student
+        ctx.body = {
+            message: "Usuário professor registrado com sucesso",
+            user: {
+                username: user.username,
+                email: user.email,
+                role: professorRole.name,
+            },
+        };
+    }
+    ,
+
+    async registerStudent(ctx: Context) {
+        debugger;
         const { username, email, password } = ctx.request.body as {
             username: string;
             email: string;
@@ -12,51 +72,55 @@ export default {
             return ctx.badRequest("username, email e password são obrigatórios");
         }
 
-        // Buscar o role "Professor"
-        const professorRole = await strapi.entityService.findMany(
-            "plugin::users-permissions.role",
-            {
-                filters: { name: "Professor" },
-                limit: 1,
-            }
-        );
+        // 1) Buscar a role "Student"
+        const studentRole = await strapi.db
+            .query("plugin::users-permissions.role")
+            .findOne({
+                where: { name: "Student" }, // troque se sua role tiver outro nome
+            });
 
-        const role = professorRole?.[0];
-        if (!role) {
-            return ctx.badRequest("Role Professor não encontrado");
+        if (!studentRole) {
+            return ctx.badRequest('Role "Student" não encontrada. Crie a role antes.');
         }
 
-        // Criar o usuário com o role Professor
-        const user = await strapi.entityService.create(
-            "plugin::users-permissions.user",
-            {
-                data: {
-                    username,
-                    email,
-                    password,
-                    confirmed: true,
-                    role: role.id,
-                },
-            }
-        );
+        // 2) Verificar se já existe usuário com o email
+        const existingUser = await strapi.db
+            .query("plugin::users-permissions.user")
+            .findOne({
+                where: { email: email.toLowerCase() },
+            });
 
-        // Gerar o token JWT
-        const jwt = await strapi
+        if (existingUser) {
+            return ctx.badRequest("Já existe um usuário com esse email");
+        }
+
+        // 3) Criar o usuário usando o service do users-permissions
+        const user = await strapi
+            .plugin("users-permissions")
+            .service("user")
+            .add({
+                username,
+                email: email.toLowerCase(),
+                password,
+                role: studentRole.id,
+                confirmed: true, // opcional: já confirma email
+            });
+
+        // 4) Gerar JWT
+        const jwt = strapi
             .plugin("users-permissions")
             .service("jwt")
             .issue({ id: user.id });
 
-
+        // 5) Resposta
         ctx.body = {
-            jwt,
+            message: "Usuário estudante registrado com sucesso",
             user: {
-                id: user.id,
                 username: user.username,
                 email: user.email,
-                role: role.name,
+                role: studentRole.name,
             },
         };
-
-    }
+    },
 
 };
