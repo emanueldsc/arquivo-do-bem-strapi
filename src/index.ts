@@ -1,7 +1,7 @@
 import type { Core } from "@strapi/strapi";
 
 export default {
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register(/* { strapi }: { strapi: Core.Strapi } */) { },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensureDefaultRoles(strapi);
@@ -78,15 +78,41 @@ async function ensureRolePermissions(strapi: Core.Strapi) {
 
   if (!student || !professor) return;
 
-  const actionsToEnable = [
+  const actionsToEnableForBoth = [
     "plugin::users-permissions.user.me",
     "plugin::users-permissions.role.find",
+    "api::doc.doc.find",
+    "api::doc.doc.findOne",
+    "api::semester.semester.find",
+    "api::semester.semester.findOne",
   ];
 
-  for (const action of actionsToEnable) {
+  const professorOnlyPermissions = [
+    "plugin::upload.content-api.upload",
+    "plugin::upload.content-api.find",
+    "plugin::upload.content-api.findOne",
+    "plugin::upload.content-api.destroy",
+    "api::doc.doc.create",
+    "api::doc.doc.update",
+    "api::doc.doc.delete",
+  ];
+
+  // libera para ambos (Student + Professor)
+  for (const action of actionsToEnableForBoth) {
     await enablePermissionForRole(strapi, student.id, action);
     await enablePermissionForRole(strapi, professor.id, action);
   }
+
+  // libera para Professor apenas
+  for (const action of professorOnlyPermissions) {
+    await enablePermissionForRole(strapi, professor.id, action);
+  }
+
+  // libera para Public apenas
+  for (const action of professorOnlyPermissions) {
+    await enablePermissionForRole(strapi, professor.id, action);
+  }
+
 }
 
 // 3) Public pode acessar registerStudent/registerProfessor (custom-auth)
@@ -112,6 +138,10 @@ async function ensurePublicPermissions(strapi: Core.Strapi) {
   const publicActions = [
     "api::custom-auth.custom-auth.registerStudent",
     "api::custom-auth.custom-auth.registerProfessor",
+    "api::doc.doc.find",
+    "api::doc.doc.findOne",
+    "api::semester.semester.find",
+    "api::semester.semester.findOne",
   ];
 
   for (const action of publicActions) {

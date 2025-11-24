@@ -33,6 +33,12 @@
       "type": "boolean",
       "required": true,
       "default": true
+    },
+    "semester": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::semester.semester",
+      "inversedBy": "docs"
     }
   }
 }

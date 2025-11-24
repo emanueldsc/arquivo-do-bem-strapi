@@ -454,6 +454,7 @@ export interface ApiDocDoc extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::doc.doc'> &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    semester: Schema.Attribute.Relation<'manyToOne', 'api::semester.semester'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -592,6 +593,7 @@ export interface ApiSemesterSemester extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    docs: Schema.Attribute.Relation<'oneToMany', 'api::doc.doc'>;
     end_date: Schema.Attribute.Date;
     grade_formula: Schema.Attribute.Text;
     grade_formula_description: Schema.Attribute.String;
