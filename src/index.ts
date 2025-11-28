@@ -1,7 +1,7 @@
 import type { Core } from "@strapi/strapi";
 
 export default {
-  register(/* { strapi }: { strapi: Core.Strapi } */) { },
+  register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensureDefaultRoles(strapi);
@@ -47,9 +47,7 @@ async function enablePermissionForRole(
   roleId: number,
   action: string
 ) {
-  const permQuery = strapi.db.query(
-    "plugin::users-permissions.permission"
-  );
+  const permQuery = strapi.db.query("plugin::users-permissions.permission");
 
   const existing = await permQuery.findOne({
     where: { role: roleId, action },
@@ -153,8 +151,7 @@ async function ensureRolePermissions(strapi: Core.Strapi) {
   strapi.log.info("✅ Permissões de Professor configuradas.");
 }
 
-
-// 3) Public pode acessar registerStudent/registerProfessor (custom-auth)
+// 3) Public pode acessar endpoints abertos (home, registro, etc.)
 async function ensurePublicPermissions(strapi: Core.Strapi) {
   const roleQuery = strapi.db.query("plugin::users-permissions.role");
   const publicRole =
@@ -166,22 +163,36 @@ async function ensurePublicPermissions(strapi: Core.Strapi) {
     return;
   }
 
-
   const publicActions = [
+    // custom-auth para registro
     "api::custom-auth.custom-auth.registerStudent",
     "api::custom-auth.custom-auth.registerProfessor",
+
+    // Docs e semestres
     "api::doc.doc.find",
     "api::doc.doc.findOne",
     "api::semester.semester.find",
     "api::semester.semester.findOne",
+
+    // 👇 NECESSÁRIO PARA HOME SEM LOGIN
+    // Institutions
+    "api::institution.institution.find",
+    "api::institution.institution.findOne",
+
+    // Projects
+    "api::project.project.find",
+    "api::project.project.findOne",
+
+    // Media Library (somente leitura de arquivos)
+    "plugin::upload.content-api.find",
+    "plugin::upload.content-api.findOne",
   ];
 
   for (const action of publicActions) {
     await enablePermissionForRole(strapi, publicRole.id, action);
   }
 
-  // log útil pra conferir UIDs reais do Strapi
   strapi.log.info(
-    "ℹ️ Se alguma permissão não for encontrada, confira o UID real em Settings > Roles."
+    "ℹ️ Permissões públicas configuradas (Home / projetos / instituições / arquivos)."
   );
 }
