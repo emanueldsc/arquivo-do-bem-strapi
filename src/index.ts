@@ -69,15 +69,23 @@ async function enablePermissionForRole(
   }
 }
 
-// 2) Student/Professor com me + role.find
+// 2) Permissões para Student / Professor
 async function ensureRolePermissions(strapi: Core.Strapi) {
   const roleQuery = strapi.db.query("plugin::users-permissions.role");
 
   const student = await roleQuery.findOne({ where: { name: "Student" } });
   const professor = await roleQuery.findOne({ where: { name: "Professor" } });
 
-  if (!student || !professor) return;
+  if (!student || !professor) {
+    strapi.log.warn(
+      "⚠️ Roles Student ou Professor não encontradas ao configurar permissões."
+    );
+    return;
+  }
 
+  //
+  // A) Permissões comuns (Student + Professor)
+  //
   const actionsToEnableForBoth = [
     "plugin::users-permissions.user.me",
     "plugin::users-permissions.role.find",
@@ -87,33 +95,64 @@ async function ensureRolePermissions(strapi: Core.Strapi) {
     "api::semester.semester.findOne",
   ];
 
-  const professorOnlyPermissions = [
-    "plugin::upload.content-api.upload",
-    "plugin::upload.content-api.find",
-    "plugin::upload.content-api.findOne",
-    "plugin::upload.content-api.destroy",
-    "api::doc.doc.create",
-    "api::doc.doc.update",
-    "api::doc.doc.delete",
-  ];
-
-  // libera para ambos (Student + Professor)
   for (const action of actionsToEnableForBoth) {
     await enablePermissionForRole(strapi, student.id, action);
     await enablePermissionForRole(strapi, professor.id, action);
   }
 
-  // libera para Professor apenas
-  for (const action of professorOnlyPermissions) {
+  //
+  // B) Professor: TODAS as permissões para
+  //    institution, doc, project, publication, semester
+  //
+  const professorContentTypes = [
+    "api::institution.institution",
+    "api::doc.doc",
+    "api::project.project",
+    "api::publication.publication",
+    "api::semester.semester",
+  ];
+
+  const contentActions = [
+    "find",
+    "findOne",
+    "create",
+    "update",
+    "delete",
+    "publish",
+    "unpublish",
+  ];
+
+  for (const ct of professorContentTypes) {
+    for (const action of contentActions) {
+      await enablePermissionForRole(strapi, professor.id, `${ct}.${action}`);
+    }
+  }
+
+  //
+  // C) Professor: Media Library (upload + folders)
+  //
+  const mediaLibraryActions = [
+    // arquivos
+    "plugin::upload.content-api.upload",
+    "plugin::upload.content-api.update",
+    "plugin::upload.content-api.destroy",
+    "plugin::upload.content-api.find",
+    "plugin::upload.content-api.findOne",
+    // pastas
+    "plugin::upload.folder.create",
+    "plugin::upload.folder.update",
+    "plugin::upload.folder.delete",
+    "plugin::upload.folder.find",
+    "plugin::upload.folder.findOne",
+  ];
+
+  for (const action of mediaLibraryActions) {
     await enablePermissionForRole(strapi, professor.id, action);
   }
 
-  // libera para Public apenas
-  for (const action of professorOnlyPermissions) {
-    await enablePermissionForRole(strapi, professor.id, action);
-  }
-
+  strapi.log.info("✅ Permissões de Professor configuradas.");
 }
+
 
 // 3) Public pode acessar registerStudent/registerProfessor (custom-auth)
 async function ensurePublicPermissions(strapi: Core.Strapi) {
@@ -127,14 +166,7 @@ async function ensurePublicPermissions(strapi: Core.Strapi) {
     return;
   }
 
-  /**
-   * UIDs de actions para Content API custom:
-   * formato: api::<api-name>.<controller-name>.<action>
-   *
-   * No seu caso:
-   * api::custom-auth.custom-auth.registerStudent
-   * api::custom-auth.custom-auth.registerProfessor
-   */
+
   const publicActions = [
     "api::custom-auth.custom-auth.registerStudent",
     "api::custom-auth.custom-auth.registerProfessor",
