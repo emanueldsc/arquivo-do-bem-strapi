@@ -151,7 +151,7 @@ async function ensureRolePermissions(strapi: Core.Strapi) {
   strapi.log.info("✅ Permissões de Professor configuradas.");
 }
 
-// 3) Public pode acessar endpoints abertos (home, registro, etc.)
+// 3) Public pode acessar endpoints abertos (home, registro, leitura pública)
 async function ensurePublicPermissions(strapi: Core.Strapi) {
   const roleQuery = strapi.db.query("plugin::users-permissions.role");
   const publicRole =
@@ -163,36 +163,41 @@ async function ensurePublicPermissions(strapi: Core.Strapi) {
     return;
   }
 
-  const publicActions = [
-    // custom-auth para registro
-    "api::custom-auth.custom-auth.registerStudent",
-    "api::custom-auth.custom-auth.registerProfessor",
-
-    // Docs e semestres
-    "api::doc.doc.find",
-    "api::doc.doc.findOne",
-    "api::semester.semester.find",
-    "api::semester.semester.findOne",
-
-    // 👇 NECESSÁRIO PARA HOME SEM LOGIN
-    // Institutions
-    "api::institution.institution.find",
-    "api::institution.institution.findOne",
-
-    // Projects
-    "api::project.project.find",
-    "api::project.project.findOne",
-
-    // Media Library (somente leitura de arquivos)
-    "plugin::upload.content-api.find",
-    "plugin::upload.content-api.findOne",
+  // Content-types que o público pode LER
+  const publicReadableContentTypes = [
+    "api::institution.institution",
+    "api::project.project",
+    "api::semester.semester",
+    "api::doc.doc",
   ];
 
-  for (const action of publicActions) {
+  // Para cada um, libera find e findOne
+  for (const ct of publicReadableContentTypes) {
+    await enablePermissionForRole(strapi, publicRole.id, `${ct}.find`);
+    await enablePermissionForRole(strapi, publicRole.id, `${ct}.findOne`);
+  }
+
+  // Endpoints customizados de autenticação/registro
+  const publicCustomAuthActions = [
+    "api::custom-auth.custom-auth.registerStudent",
+    "api::custom-auth.custom-auth.registerProfessor",
+  ];
+
+  for (const action of publicCustomAuthActions) {
+    await enablePermissionForRole(strapi, publicRole.id, action);
+  }
+
+  // Media Library (somente leitura de arquivos)
+  const publicUploadReadActions = [
+    "plugin::upload.content-api.find", // GET /api/upload/files
+    "plugin::upload.content-api.findOne", // GET /api/upload/files/:id
+  ];
+
+  for (const action of publicUploadReadActions) {
     await enablePermissionForRole(strapi, publicRole.id, action);
   }
 
   strapi.log.info(
-    "ℹ️ Permissões públicas configuradas (Home / projetos / instituições / arquivos)."
+    "ℹ️ Permissões públicas configuradas (Home / projetos / instituições / semestres / docs / arquivos)."
   );
 }
