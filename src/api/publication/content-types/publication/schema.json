@@ -52,6 +52,11 @@
       "relation": "manyToOne",
       "target": "api::project.project",
       "inversedBy": "publications"
+    },
+    "student_author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
     }
   }
 }

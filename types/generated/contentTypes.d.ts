@@ -484,6 +484,7 @@ export interface ApiInstitutionInstitution extends Struct.CollectionTypeSchema {
       'api::institution.institution'
     > &
       Schema.Attribute.Private;
+    logo: Schema.Attribute.Media<'images'>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     projects: Schema.Attribute.Relation<'oneToMany', 'api::project.project'>;
     publishedAt: Schema.Attribute.DateTime;
@@ -522,6 +523,14 @@ export interface ApiProjectProject extends Struct.CollectionTypeSchema {
       'api::project.project'
     > &
       Schema.Attribute.Private;
+    max_students: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<10>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     publications: Schema.Attribute.Relation<
       'oneToMany',
@@ -572,6 +581,10 @@ export interface ApiPublicationPublication extends Struct.CollectionTypeSchema {
     state: Schema.Attribute.Enumeration<['DRAFT', 'PUBLISHED', 'ARCHIVED']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'DRAFT'>;
+    student_author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

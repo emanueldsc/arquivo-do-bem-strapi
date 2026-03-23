@@ -51,6 +51,11 @@
       "relation": "oneToMany",
       "target": "api::publication.publication",
       "mappedBy": "project"
+    },
+    "max_students": {
+      "type": "integer",
+      "default": 10,
+      "min": 0
     }
   }
 }

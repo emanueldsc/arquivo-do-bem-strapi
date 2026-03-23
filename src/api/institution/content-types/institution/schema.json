@@ -26,6 +26,14 @@
     "address": {
       "type": "string"
     },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
     "projects": {
       "type": "relation",
       "relation": "oneToMany",
