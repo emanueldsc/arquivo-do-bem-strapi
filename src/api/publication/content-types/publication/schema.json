@@ -57,6 +57,9 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "observations": {
+      "type": "text"
     }
   }
 }

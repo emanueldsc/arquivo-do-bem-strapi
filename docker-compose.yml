@@ -1,29 +1,40 @@
+version: '3.8'
+
 services:
-  postgres:
-    image: postgres:14-alpine
-    container_name: postgres_db
-    restart: always
-    ports:
-      - "5432:5432"
-    env_file:
-      - ./.env
+  db:
+    image: postgres:15-alpine
+    container_name: arquivo-do-bem-db
+    restart: unless-stopped
+    env_file: .env
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: always
+      - strapi-db-data:/var/lib/postgresql/data
     ports:
-      - "8080:8080"
+      - "5432:5432"
+
+  dbgate:
+    image: dbgate/dbgate
+    container_name: arquivo-do-bem-dbgate
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
     environment:
-      ADMINER_DEFAULT_SERVER: postgres_db
+      # Configuração para conexão automática do DbGate [1]
+      PORT: 3000
+      CONNECTIONS: "conn1"
+      LABEL_conn1: "PostgreSQL - Arquivo do Bem"
+      SERVER_conn1: "db"
+      USER_conn1: "${DATABASE_USERNAME}"
+      PASSWORD_conn1: "${DATABASE_PASSWORD}"
+      DATABASE_conn1: "${DATABASE_NAME}"
+      PORT_conn1: "5432"
+      ENGINE_conn1: "postgres@dbgate-plugin-postgres"
     depends_on:
-      - postgres
+      - db
 
 volumes:
-  postgres_data:
+  strapi-db-data:

@@ -470,7 +470,7 @@ export interface ApiInstitutionInstitution extends Struct.CollectionTypeSchema {
     singularName: 'institution';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     address: Schema.Attribute.String;
@@ -503,7 +503,7 @@ export interface ApiProjectProject extends Struct.CollectionTypeSchema {
     singularName: 'project';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -575,6 +575,7 @@ export interface ApiPublicationPublication extends Struct.CollectionTypeSchema {
       'api::publication.publication'
     > &
       Schema.Attribute.Private;
+    observations: Schema.Attribute.Text;
     project: Schema.Attribute.Relation<'manyToOne', 'api::project.project'>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
@@ -600,7 +601,7 @@ export interface ApiSemesterSemester extends Struct.CollectionTypeSchema {
     singularName: 'semester';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
