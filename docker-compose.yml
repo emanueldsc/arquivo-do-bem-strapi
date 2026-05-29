@@ -23,7 +23,6 @@ services:
       - "3000:3000"
     env_file: .env
     environment:
-      # Configuração para conexão automática do DbGate [1]
       PORT: 3000
       CONNECTIONS: "conn1"
       LABEL_conn1: "PostgreSQL - Arquivo do Bem"

@@ -557,7 +557,7 @@ export interface ApiPublicationPublication extends Struct.CollectionTypeSchema {
     singularName: 'publication';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     attachments: Schema.Attribute.Media<
